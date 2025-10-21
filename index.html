@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HypeBoard — ToDo & Timer (Responsive)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg1:#0f172a; --bg2:#1e293b; --card:rgba(255,255,255,0.04);
+      --accent:#3b82f6; --success:#22c55e; --text:#f8fafc; --muted:#94a3b8;
+      --glass: rgba(255,255,255,0.04);
+    }
+    *{box-sizing:border-box;transition:all .22s ease}
+    body{
+      font-family:"Poppins",sans-serif;
+      background:linear-gradient(120deg,var(--bg1),var(--bg2));
+      color:var(--text);
+      display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:28px 12px;
+      -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+    }
+
+    .container {
+      width:420px;
+      max-width:92%;
+      display:flex;flex-direction:column;gap:14px;align-items:center;
+    }
+
+    .main-title{font-size:36px;font-weight:700;color:var(--accent);margin-bottom:4px;text-shadow:0 0 12px rgba(59,130,246,.28);text-align:center}
+    .todo-container{
+      background:var(--card);padding:18px;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.45);
+      width:100%;backdrop-filter:blur(8px);
+    }
+    h2{font-size:18px;color:var(--accent);text-align:center;margin:0 0 6px}
+    .quote{font-size:13px;color:var(--muted);text-align:center;margin-bottom:10px;font-style:italic}
+
+    .input-section{display:flex;gap:10px}
+    input[type="text"]{flex:1;padding:10px;border-radius:10px;border:none;outline:none;font-size:14px;background:transparent;color:inherit}
+    button{background:var(--accent);color:white;border:none;border-radius:10px;padding:8px 12px;cursor:pointer;font-weight:700}
+    button:hover{filter:brightness(.95)}
+    ul{list-style:none;padding:0;margin-top:12px;max-height:220px;overflow:auto}
+    li{background:rgba(255,255,255,.03);margin-bottom:10px;padding:10px;border-radius:10px;display:flex;align-items:center;gap:10px;justify-content:space-between;cursor:default}
+    li .content{display:flex;align-items:center;gap:10px;flex:1}
+    .checkbox{width:20px;height:20px;border:2px solid var(--text);border-radius:50%;cursor:pointer;flex:0 0 20px}
+    .checkbox.checked{background:var(--success);border-color:var(--success);box-shadow:0 0 8px var(--success)}
+    li.completed{opacity:.85;text-decoration:line-through;color:var(--muted);background:rgba(255,255,255,.02)}
+
+    .bottom-controls{margin-top:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+    .small-muted{color:var(--muted);font-size:13px}
+
+    /* Timer box */
+    .timer-box{margin-top:6px;background:var(--card);padding:16px;border-radius:14px;width:100%;box-shadow:0 8px 24px rgba(0,0,0,.45);backdrop-filter:blur(8px);text-align:center}
+    .circle-wrap{display:flex;justify-content:center;margin-bottom:8px}
+    svg.timer-ring{transform:rotate(-90deg);width:140px;height:140px}
+    .timer-display{font-size:40px;font-weight:700;color:var(--accent);margin-bottom:8px}
+    .timer-inputs{display:flex;justify-content:center;gap:8px;margin-bottom:8px}
+    .timer-inputs input{width:96px;text-align:center;padding:8px;border-radius:10px;border:none;background:transparent;color:inherit;font-size:14px}
+    .timer-buttons{display:flex;justify-content:center;gap:8px;margin-top:6px;flex-wrap:wrap}
+
+    /* fixed bottom right controls */
+    .bottom-fixed{position:fixed;bottom:18px;right:18px;display:flex;align-items:center;gap:10px;background:var(--card);padding:8px 12px;border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,.5);backdrop-filter:blur(8px);z-index:1500}
+    .lang,.theme-toggle{cursor:pointer;font-weight:700;user-select:none}
+
+    /* context menu */
+    .context-menu{position:absolute;display:none;background:linear-gradient(180deg,rgba(10,14,20,.98),rgba(6,8,15,.98));border:1px solid rgba(255,255,255,.06);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.65);z-index:9999;overflow:hidden}
+    .context-menu div{padding:10px 16px;color:var(--text);cursor:pointer;white-space:nowrap}
+    .context-menu div:hover{background:rgba(59,130,246,.14)}
+
+    /* alarm overlay (center) */
+    .alarm-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:2000}
+    .alarm-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.36);backdrop-filter:blur(3px)}
+    .alarm-card{position:relative;background:rgba(15,23,42,.9);border-radius:14px;padding:18px 20px;width:360px;max-width:92%;box-shadow:0 20px 50px rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.04);backdrop-filter:blur(6px);z-index:2001;text-align:center;transform-origin:center}
+    .alarm-card h3{margin:0 0 8px;font-size:20px;color:var(--accent)}
+    .alarm-card p{margin:0 0 14px;color:var(--text)}
+    .alarm-card button{background:var(--accent);padding:10px 14px;border-radius:10px;font-weight:700}
+
+    /* show animation */
+    @keyframes popIn { from { opacity:0; transform:translateY(-8px) scale(.98) } to { opacity:1; transform:translateY(0) scale(1) } }
+    .alarm-card.show { animation: popIn .18s ease both }
+
+    /* light theme overrides */
+    body.light{background:linear-gradient(120deg,#f1f5f9,#e2e8f0);color:#0f172a}
+    body.light .todo-container, body.light .timer-box, body.light .bottom-fixed, body.light .alarm-card{background:#fff;color:#0f172a}
+
+    /* responsive tweaks */
+    @media (max-width:420px){
+      .main-title{font-size:26px}
+      .timer-display{font-size:34px}
+      .alarm-card{width:320px;padding:14px}
+      .timer-inputs input{width:80px}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="main-title">HypeBoard — by Adem</div>
+
+    <div class="todo-container" id="todoContainer">
+      <h2 id="todoTitle">To Do List</h2>
+      <div class="quote" id="quote">“Focus on progress, not perfection.”</div>
+
+      <div class="input-section">
+        <input id="taskInput" type="text" placeholder="Add a new task..." aria-label="New task" />
+        <button id="addTask">Add</button>
+      </div>
+
+      <ul id="taskList" aria-live="polite"></ul>
+
+      <div class="bottom-controls">
+        <button id="clearCompleted">Clear Done</button>
+        <div class="small-muted">Tip: Right-click a task to edit or delete</div>
+      </div>
+    </div>
+
+    <!-- TIMER BOX (below tasks) -->
+    <div class="timer-box" id="timerBox">
+      <h2 id="timerTitle">Custom Timer</h2>
+      <div class="circle-wrap" aria-hidden="true">
+        <svg class="timer-ring" viewBox="0 0 120 120" role="img" aria-label="Timer progress">
+          <circle cx="60" cy="60" r="54" stroke="rgba(255,255,255,.06)" stroke-width="12" fill="none"></circle>
+          <circle id="progressCircle" cx="60" cy="60" r="54" stroke="var(--accent)" stroke-width="12" fill="none" stroke-linecap="round" stroke-dasharray="339.292" stroke-dashoffset="339.292"></circle>
+        </svg>
+      </div>
+      <div class="timer-display" id="timerDisplay">00:00</div>
+      <div class="timer-inputs">
+        <input id="minutesInput" type="number" min="0" placeholder="Min" />
+        <input id="secondsInput" type="number" min="0" max="59" placeholder="Sec" />
+      </div>
+      <div class="timer-buttons">
+        <button id="startTimer">Start</button>
+        <button id="pauseTimer">Pause</button>
+        <button id="resetTimer">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- alarm overlay -->
+  <div class="alarm-overlay" id="alarmOverlay" aria-hidden="true">
+    <div class="alarm-backdrop"></div>
+    <div class="alarm-card" id="alarmCard" role="dialog" aria-modal="true">
+      <h3 id="alarmTitle">⏰ Time's up!</h3>
+      <p id="alarmText">Press Stop to silence the alarm.</p>
+      <div style="display:flex;justify-content:center;gap:12px;margin-top:8px">
+        <button id="stopAlarmBtn">Stop Alarm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- bottom fixed controls -->
+  <div class="bottom-fixed" role="toolbar" aria-label="Language and theme">
+    <span class="lang" id="langSwitch">🌐 EN</span>
+    <span class="theme-toggle" id="themeToggle">🌙</span>
+  </div>
+
+  <!-- sounds -->
+  <audio id="ding" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_4a0c83b674.mp3?filename=success-1-6297.mp3"></audio>
+  <audio id="alarmSound" src="alarm.wav" preload="auto" loop></audio>
+
+  <script>
+    /* =======================
+       Elements & translations
+       ======================= */
+    const taskInput = document.getElementById('taskInput');
+    const addTaskBtn = document.getElementById('addTask');
+    const taskList = document.getElementById('taskList');
+    const clearCompletedBtn = document.getElementById('clearCompleted');
+    const langSwitchEl = document.getElementById('langSwitch');
+    const themeToggleEl = document.getElementById('themeToggle');
+    const quoteEl = document.getElementById('quote');
+
+    const minutesInput = document.getElementById('minutesInput');
+    const secondsInput = document.getElementById('secondsInput');
+    const startBtn = document.getElementById('startTimer');
+    const pauseBtn = document.getElementById('pauseTimer');
+    const resetBtn = document.getElementById('resetTimer');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const progressCircle = document.getElementById('progressCircle');
+
+    const alarmOverlay = document.getElementById('alarmOverlay');
+    const alarmCard = document.getElementById('alarmCard');
+    const alarmTitle = document.getElementById('alarmTitle');
+    const alarmText = document.getElementById('alarmText');
+    const stopAlarmBtn = document.getElementById('stopAlarmBtn');
+
+    const ding = document.getElementById('ding');
+    const alarmSound = document.getElementById('alarmSound');
+
+    const translations = {
+      en: {
+        add: "Add", clear: "Clear Done", placeholder: "Add a new task...",
+        timerTitle: "Custom Timer", start: "Start", pause: "Pause", reset: "Reset", min: "Min", sec: "Sec",
+        timesUp: "⏰ Time's up!", stopAlarm: "Stop Alarm", alarmText: "Press Stop to silence the alarm.",
+        quoteSamples: ["“Small steps every day.”","“Discipline beats motivation.”","“Dream it. Do it.”"]
+      },
+      fr: {
+        add: "Ajouter", clear: "Effacer", placeholder: "Ajouter une tâche...",
+        timerTitle: "Minuteur personnalisé", start: "Démarrer", pause: "Pause", reset: "Réinitialiser", min: "Min", sec: "Sec",
+        timesUp: "⏰ Le temps est écoulé !", stopAlarm: "Arrêter l'alarme", alarmText: "Appuyez sur Arrêter pour couper l'alarme.",
+        quoteSamples: ["« De petits pas chaque jour. »","« La discipline dépasse la motivation. »","« Rêve-le. Fais-le. »"]
+      },
+      ar: {
+        add: "أضف", clear: "مسح المنجزة", placeholder: "أضف مهمة جديدة...",
+        timerTitle: "المؤقت", start: "ابدأ", pause: "إيقاف مؤقت", reset: "إعادة ضبط", min: "دق", sec: "ث",
+        timesUp: "⏰ انتهى الوقت!", stopAlarm: "إيقاف المنبه", alarmText: "اضغط إيقاف لكتم صوت المنبه.",
+        quoteSamples: ["« خطوات صغيرة كل يوم. »","« الانضباط يتغلب على الدافع. »","« احلم به، ثم افعله. »"]
+      }
+    };
+
+    /* =======================
+       State & persistence keys
+       ======================= */
+    let lang = localStorage.getItem('hb_lang') || 'en';
+    let theme = localStorage.getItem('hb_theme') || 'dark';
+
+    // Timer variables
+    const CIRCUM = 2 * Math.PI * 54;
+    progressCircle.setAttribute('stroke-dasharray', CIRCUM);
+
+    let totalSeconds = 0;
+    let remaining = 0;
+    let prevRemaining = 0; // guard to prevent false alarm
+    let running = false;
+    let timerInterval = null;
+
+    const AUTO_RESET_AFTER_STOP = true; // as requested
+
+    /* =======================
+       Tasks: create / save / load
+       ======================= */
+    function saveTasks(){
+      const arr = [];
+      taskList.querySelectorAll('li').forEach(li=>{
+        const text = li.querySelector('span').textContent;
+        const completed = li.classList.contains('completed');
+        arr.push({text,completed});
+      });
+      localStorage.setItem('hb_tasks', JSON.stringify(arr));
+    }
+    function loadTasks(){
+      const arr = JSON.parse(localStorage.getItem('hb_tasks') || '[]');
+      taskList.innerHTML = '';
+      arr.forEach(t => createTask(t.text, t.completed));
+    }
+
+    function createTask(text, completed=false){
+      const li = document.createElement('li');
+      const content = document.createElement('div'); content.className='content';
+      const checkbox = document.createElement('div'); checkbox.className='checkbox';
+      if(completed){ checkbox.classList.add('checked'); li.classList.add('completed'); }
+      const span = document.createElement('span'); span.textContent = text;
+      content.appendChild(checkbox); content.appendChild(span);
+      const right = document.createElement('div');
+      li.appendChild(content); li.appendChild(right);
+
+      // events
+      checkbox.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        checkbox.classList.toggle('checked');
+        li.classList.toggle('completed');
+        ding.play().catch(()=>{});
+        saveTasks();
+      });
+
+      // left click placeholder
+      li.addEventListener('click', ()=>{ /* reserved */ });
+
+      taskList.appendChild(li);
+      saveTasks();
+    }
+
+    addTaskBtn.addEventListener('click', ()=>{
+      const t = taskInput.value.trim();
+      if(!t) return;
+      createTask(t);
+      taskInput.value = '';
+      ding.play().catch(()=>{});
+    });
+    taskInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') addTaskBtn.click(); });
+
+    clearCompletedBtn.addEventListener('click', ()=>{
+      taskList.querySelectorAll('.completed').forEach(li=>li.remove());
+      saveTasks();
+    });
+
+    /* =======================
+       Context (right-click) menu
+       ======================= */
+    const contextMenu = document.createElement('div');
+    contextMenu.className = 'context-menu';
+    const menuEdit = document.createElement('div');
+    const menuDelete = document.createElement('div');
+    contextMenu.append(menuEdit, menuDelete);
+    document.body.appendChild(contextMenu);
+
+    document.addEventListener('click', ()=> contextMenu.style.display = 'none');
+
+    taskList.addEventListener('contextmenu', (e)=>{
+      e.preventDefault();
+      const li = e.target.closest('li');
+      if(!li) return;
+      const menuTrans = { en:{edit:'Edit', del:'Delete'}, fr:{edit:'Modifier', del:'Supprimer'}, ar:{edit:'تعديل', del:'حذف'} };
+      const mt = menuTrans[lang];
+      menuEdit.textContent = mt.edit;
+      menuDelete.textContent = mt.del;
+
+      // position clamp
+      const x = Math.min(e.pageX, window.innerWidth - 180);
+      const y = Math.min(e.pageY, window.innerHeight - 80);
+      contextMenu.style.left = x + 'px';
+      contextMenu.style.top = y + 'px';
+      contextMenu.style.display = 'block';
+
+      menuEdit.onclick = ()=>{
+        contextMenu.style.display = 'none';
+        const old = li.querySelector('span').textContent;
+        const val = prompt(mt.edit + ':', old);
+        if(val && val.trim()){
+          li.querySelector('span').textContent = val.trim();
+          saveTasks();
+        }
+      };
+      menuDelete.onclick = ()=>{
+        contextMenu.style.display = 'none';
+        li.remove();
+        saveTasks();
+      };
+    });
+
+    /* =======================
+       Language & Theme UI
+       ======================= */
+    function updateLanguageUI(){
+      const t = translations[lang];
+      addTaskBtn.textContent = t.add;
+      clearCompletedBtn.textContent = t.clear;
+      taskInput.placeholder = t.placeholder;
+      document.getElementById('timerTitle').textContent = t.timerTitle;
+      startBtn.textContent = t.start;
+      pauseBtn.textContent = t.pause;
+      resetBtn.textContent = t.reset;
+      minutesInput.placeholder = t.min;
+      secondsInput.placeholder = t.sec;
+      langSwitchEl.textContent = '🌐 ' + lang.toUpperCase();
+      quoteEl.textContent = t.quoteSamples[Math.floor(Math.random()*t.quoteSamples.length)];
+      alarmTitle.textContent = t.timesUp;
+      stopAlarmBtn.textContent = t.stopAlarm;
+      alarmText.textContent = t.alarmText;
+      // direction for Arabic
+      if(lang === 'ar'){ document.documentElement.dir = 'rtl'; } else { document.documentElement.dir = 'ltr'; }
+    }
+
+    langSwitchEl.addEventListener('click', ()=>{
+      lang = lang === 'en' ? 'fr' : lang === 'fr' ? 'ar' : 'en';
+      localStorage.setItem('hb_lang', lang);
+      updateLanguageUI();
+    });
+
+    themeToggleEl.addEventListener('click', ()=>{
+      if(document.body.classList.contains('light')){ document.body.classList.remove('light'); theme='dark'; themeToggleEl.textContent='🌙'; }
+      else { document.body.classList.add('light'); theme='light'; themeToggleEl.textContent='☀️'; }
+      localStorage.setItem('hb_theme', theme);
+    });
+
+    (function initUI(){
+      if(theme === 'light'){ document.body.classList.add('light'); themeToggleEl.textContent='☀️'; }
+      langSwitchEl.textContent = '🌐 ' + lang.toUpperCase();
+      updateLanguageUI();
+    })();
+
+    /* =======================
+       TIMER LOGIC (safe alarm trigger)
+       ======================= */
+    function formatTime(s){ const m = Math.floor(s/60); const sec = s%60; return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`; }
+
+    function updateTimerDisplay(){
+      timerDisplay.textContent = formatTime(remaining);
+      const pct = totalSeconds ? (remaining / totalSeconds) : 0;
+      progressCircle.setAttribute('stroke-dashoffset', CIRCUM * (1 - pct));
+      saveTimerState();
+    }
+
+    function saveTimerState(){
+      const state = { totalSeconds, remaining, running, timestamp: Date.now() };
+      localStorage.setItem('hb_timer', JSON.stringify(state));
+    }
+
+    function loadTimerState(){
+      const st = JSON.parse(localStorage.getItem('hb_timer') || 'null');
+      if(st){
+        totalSeconds = st.totalSeconds || 0;
+        remaining = st.remaining || 0;
+        running = !!st.running;
+        // if it was running, try to account for elapsed time
+        if(st.running && st.timestamp){
+          const elapsed = Math.floor((Date.now() - st.timestamp)/1000);
+          // subtract elapsed to resume
+          remaining = Math.max(0, (st.remaining || 0) - elapsed);
+          // do NOT auto-trigger alarm on load — user will start or it'll show after resume normally
+          if(remaining > 0){
+            startInterval(); // resume ticking
+          } else {
+            running = false;
+            remaining = 0;
+          }
+        }
+        updateTimerDisplay();
+      }
+    }
+
+    function startInterval(){
+      if(timerInterval) clearInterval(timerInterval);
+      running = true;
+      saveTimerState();
+      prevRemaining = remaining;
+      timerInterval = setInterval(()=>{
+        if(remaining > 0){
+          prevRemaining = remaining;
+          remaining--;
+          updateTimerDisplay();
+          // real transition detection: if transitioned to zero now
+          if(prevRemaining > 0 && remaining <= 0){
+            clearInterval(timerInterval);
+            running = false;
+            remaining = 0;
+            updateTimerDisplay();
+            triggerAlarm();
+          }
+        } else {
+          // remaining already zero or negative -> ensure stopped
+          clearInterval(timerInterval);
+          running = false;
+          saveTimerState();
+        }
+      }, 1000);
+    }
+
+    function triggerAlarm(){
+      try{ alarmSound.currentTime = 0; alarmSound.play().catch(()=>{}); }catch(e){}
+      // show center card with animation
+      alarmOverlay.style.display = 'flex';
+      // add animation class
+      alarmCard.classList.remove('show');
+      // force reflow to restart animation
+      void alarmCard.offsetWidth;
+      alarmCard.classList.add('show');
+      alarmOverlay.setAttribute('aria-hidden','false');
+    }
+
+    function stopAlarm(){
+      try{ alarmSound.pause(); alarmSound.currentTime = 0; }catch(e){}
+      alarmOverlay.style.display = 'none';
+      alarmOverlay.setAttribute('aria-hidden','true');
+      if(AUTO_RESET_AFTER_STOP){
+        totalSeconds = 0; remaining = 0; running = false;
+        updateTimerDisplay();
+        saveTimerState();
+      }
+    }
+
+    startBtn.addEventListener('click', ()=>{
+      if(running) return;
+      // if remaining is zero, build from inputs
+      if(remaining <= 0){
+        const mins = parseInt(minutesInput.value) || 0;
+        const secs = parseInt(secondsInput.value) || 0;
+        totalSeconds = mins * 60 + secs;
+        remaining = totalSeconds;
+      }
+      if(remaining <= 0) return;
+      startInterval();
+    });
+
+    pauseBtn.addEventListener('click', ()=>{
+      if(timerInterval) clearInterval(timerInterval);
+      running = false;
+      saveTimerState();
+    });
+
+    resetBtn.addEventListener('click', ()=>{
+      if(timerInterval) clearInterval(timerInterval);
+      running = false;
+      totalSeconds = 0;
+      remaining = 0;
+      updateTimerDisplay();
+      saveTimerState();
+    });
+
+    stopAlarmBtn.addEventListener('click', stopAlarm);
+
+    /* Prevent false alarm on unrelated DOM changes:
+       - prevRemaining guard prevents trigger unless we actually decreased from >0 to 0.
+       - loadTimerState will not auto-trigger on load. */
+
+    /* =======================
+       lifecycle & events
+       ======================= */
+    loadTasks();
+    loadTimerState();
+    updateTimerDisplay();
+
+    // accessibility: stop alarm with Escape
+    document.addEventListener('keydown', (e)=>{
+      if(e.key === 'Escape' && alarmOverlay.style.display === 'flex'){ stopAlarm(); }
+    });
+
+    // persist timer before unload
+    window.addEventListener('beforeunload', ()=> saveTimerState());
+
+    // visibility handling: try to keep state consistent
+    document.addEventListener('visibilitychange', ()=>{
+      if(document.hidden){
+        saveTimerState();
+      } else {
+        loadTimerState();
+      }
+    });
+
+    /* =======================
+       small: prevent text selection on double-click in buttons on mobile
+       ======================= */
+    document.querySelectorAll('button').forEach(b => b.addEventListener('mousedown', e => e.preventDefault()));
+
+    /* =======================
+       Prevent context menu outside tasks
+       ======================= */
+    document.addEventListener('contextmenu', (e)=>{
+      if(!e.target.closest('#taskList')){
+        // allow default context menu elsewhere
+        return;
+      }
+    });
+
+    /* =======================
+       End
+       ======================= */
+  </script>
+</body>
+</html>
