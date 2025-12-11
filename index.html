@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>HypeBoard — ToDo & Timer (Responsive)</title>
+  <title>HypeBoard - Make Your Move</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -104,7 +104,7 @@
 
     /* light theme overrides */
     body.light{background:linear-gradient(120deg,#f1f5f9,#e2e8f0);color:#0f172a}
-    body.light .todo-container, body.light .timer-box, body.light .bottom-fixed, body.light .alarm-card{background:#fff;color:#0f172a}
+    body.light .todo-container, body.light .timer-box, body.light .bottom-fixed, body.light .alarm-card , .music-box{background:#fff;color:#0f172a}
 
     /* responsive tweaks */
     @media (max-width:420px){
@@ -156,69 +156,6 @@
         <button id="resetTimer">Reset</button>
       </div>
     </div>
-
-    <!-- ✨ IMPROVED MUSIC BOX (final fixed version) -->
-    <div class="music-box" id="musicBox" style="
-      background:var(--card);
-      padding:18px;
-      border-radius:16px;
-      width:100%;
-      box-shadow:0 8px 24px rgba(0,0,0,.45);
-      backdrop-filter:blur(8px);
-      text-align:center;
-    ">
-      <h2 style="color:var(--accent);margin-bottom:4px;">🎵 Focus Music</h2>
-      <p class="song-title" style="color:var(--muted);font-size:14px;">Lo-Fi Chill Vibes</p>
-
-      <div class="music-player" style="margin-top:10px;position:relative;">
-        <audio id="focusTrack" preload="auto" style="width:100%;border-radius:12px;">
-          <source src="CAME CAME !.wav" type="audio/wav">
-          Your browser does not support the audio element.
-        </audio>
-
-        <!-- Equalizer animation -->
-        <div id="eqBars" style="
-          display:flex;
-          justify-content:center;
-          align-items:flex-end;
-          gap:4px;
-          height:30px;
-          margin-top:8px;
-        ">
-          <div class='bar' style="width:6px;height:6px;background:var(--accent);border-radius:3px;"></div>
-          <div class='bar' style="width:6px;height:6px;background:var(--accent);border-radius:3px;"></div>
-          <div class='bar' style="width:6px;height:6px;background:var(--accent);border-radius:3px;"></div>
-          <div class='bar' style="width:6px;height:6px;background:var(--accent);border-radius:3px;"></div>
-        </div>
-      </div>
-
-      <div style="margin-top:12px;display:flex;justify-content:center;gap:12px;">
-        <button id="playMusicBtn" style="
-          background:var(--accent);
-          color:white;
-          border:none;
-          border-radius:10px;
-          padding:8px 16px;
-          font-weight:600;
-          cursor:pointer;
-          box-shadow:0 0 10px rgba(59,130,246,.5);
-          transition:.3s;
-        "> Play</button>
-        <button id="pauseMusicBtn" style="
-          background:#ef4444;
-          color:white;
-          border:none;
-          border-radius:10px;
-          padding:8px 16px;
-          font-weight:600;
-          cursor:pointer;
-          box-shadow:0 0 10px rgba(239,68,68,.5);
-          transition:.3s;
-        "> Pause</button>
-      </div>
-    </div>
-
-  </div>
 
   <!-- alarm overlay -->
   <div class="alarm-overlay" id="alarmOverlay" aria-hidden="true">
@@ -644,49 +581,92 @@
        ======================= */
   </script>
 
-  <!-- ===== Music control (separate block, safe) ===== -->
-  <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const musicTrack = document.getElementById('focusTrack');
-    const playMusicBtn = document.getElementById('playMusicBtn');
-    const pauseMusicBtn = document.getElementById('pauseMusicBtn');
-    const eqBars = document.querySelectorAll('#eqBars .bar');
-
-    let eqAnim = null;
-
-    function startEqualizer() {
-      if (eqAnim) return;
-      eqAnim = setInterval(() => {
-        eqBars.forEach(b => {
-          const h = Math.random() * 24 + 6;
-          b.style.height = h + 'px';
-        });
-      }, 150);
-    }
-
-    function stopEqualizer() {
-      clearInterval(eqAnim);
-      eqAnim = null;
-      eqBars.forEach(b => b.style.height = '6px');
-    }
-
-    if (playMusicBtn) {
-      playMusicBtn.addEventListener('click', () => {
-        if (musicTrack) musicTrack.play().catch(err => console.log('Play blocked:', err));
-      });
-    }
-    if (pauseMusicBtn) {
-      pauseMusicBtn.addEventListener('click', () => {
-        if (musicTrack) musicTrack.pause();
-      });
-    }
-    if (musicTrack) {
-      musicTrack.addEventListener('play', startEqualizer);
-      musicTrack.addEventListener('pause', stopEqualizer);
-      musicTrack.addEventListener('ended', stopEqualizer);
-    }
-  });
-  </script>
 
 </body>
+<!-- 🎧 SPOTIFY RADIO -->
+    <div class="music-box" id="musicBox" style="
+      background:var(--card);
+      padding:18px;
+      border-radius:16px;
+      width:100%;
+      box-shadow:0 8px 24px rgba(0,0,0,.45);
+      backdrop-filter:blur(8px);
+      text-align:center;
+    ">
+      <h2 style="color:#1DB954;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="#1DB954">
+          <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+        </svg>
+        Spotify Radio
+      </h2>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:12px;">Choose your focus playlist</p>
+
+      <!-- Playlist selector -->
+      <select id="playlistSelector" style="
+        width:100%;
+        padding:10px;
+        border-radius:10px;
+        border:1px solid rgba(255,255,255,.1);
+        background:rgba(255,255,255,.05);
+        color:var(--text);
+        font-size:14px;
+        margin-bottom:12px;
+        cursor:pointer;
+        font-family:inherit;
+      ">
+        <option value="0RDXmm2tZzeMncDIkN0CP4">HypeBoard Official PlayList</option>
+        <option value="37i9dQZF1DXc3KPAjGyPdm">Lo-Fi beats</option>
+        <option value="37i9dQZF1DX8Uebhn9wzrS">Chill Lounge</option>
+        <option value="37i9dQZF1DX4sWSpwq3LiO">Peaceful Piano</option>
+        <option value="37i9dQZF1DX0SM0LYsmbMT">Deep Focus</option>
+        <option value="37i9dQZF1DX4dyzvuaRJ0n">Ambient Relaxation</option>
+        <option value="37i9dQZF1DX1s9knjP51Oa">Classical Essentials</option>
+        <option value="37i9dQZF1DX3PFzdbtx1Us">Instrumental Study</option>
+      </select>
+
+      <!-- Spotify embed container -->
+      <div id="spotifyEmbed" style="
+        width:100%;
+        height:152px;
+        border-radius:12px;
+        overflow:hidden;
+        box-shadow:0 4px 16px rgba(0,0,0,.3);
+      ">
+        <iframe 
+          id="spotifyIframe"
+          style="border-radius:12px;width:100%;height:100%;" 
+          src="https://open.spotify.com/embed/playlist/499gONcSmU40qGMGB1l2qP?utm_source=generator" 
+          frameBorder="0" 
+          allowfullscreen="" 
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+          loading="lazy">
+        </iframe>
+      </div>
+
+    
+
+      <div style="margin-top:12px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;">
+        <a href="https://open.spotify.com/playlist/499gONcSmU40qGMGB1l2qP?si=9136d02f7bde4aa5&pt=4dcd9cd07c269ede5a5e82fa94c6c023" 
+         target="_blank" style="
+          background:#1DB954;
+          color:rgb(255, 255, 255);
+          text-decoration:none;
+          border-radius:10px;
+          padding:8px 14px;
+          font-weight:600;
+          font-size:13px;
+          display:inline-flex;
+          align-items:center;
+          gap:6px;
+          box-shadow:0 0 10px rgba(29,185,84,.4);
+          transition:.3s;
+        " id="openSpotifyBtn">
+          <svg width="10" height="9" viewBox="0 0 24 24" fill="white">
+            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+          </svg>
+          Open in Spotify
+        </a>
+      </div>
+    </div>
 </html>
+
